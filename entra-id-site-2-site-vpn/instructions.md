@@ -8,7 +8,7 @@ We recommend that you use the following address ranges, which are enumerated in 
 
 The IETF has set aside these ranges for private, non-routable address spaces. \
 PRIVATE NON ROUTABLE \
-10.0.0.0 to 10.255.255.255 (10/8 prefix) \ 
+10.0.0.0 to 10.255.255.255 (10/8 prefix) \
 172.16.0.0 to 172.31.255.255 (172.16/12 prefix) \
 192.168.0.0 to 192.168.255.255 (192.168/16 prefix)
 
@@ -40,26 +40,30 @@ Resource Group Name: **entra-domain-services** \
 Region: East-US \
 VNet Name: **aadds-vnet** \
 VNet IPv4 Address Space: _10.0.0.0/22_ \
-Subnet Name: **subnet-01** \
-Subnet IPv4 Address Space: _10.0.0.0/24_ \
-**IPs:** _10.0.0.0 - 10.0.3.255 vnet | 10.0.0.0/22 VNet_
 
-### Step 3: Add a Gateway Subnet
+### Step 3: Add a Subnet
+Resource Group Name: **entra-domain-services** \
+Region: East-US \
+VNet Name: aadds-vnet \
+VNet IPv4 Address Space: _10.0.0.0/22_ \
+Subnet Name: **subnet-01** \
+Subnet IPv4 Address Space: _**10.0.1.0/24**_
+
+### Step 4: Add a Gateway Subnet
 Resource Group Name: entra-domain-services \
 Region: East-US \
 VNet Name: **aadds-vnet** \
 VNet IPv4 Address Space: _10.0.0.0/22_ \
-Subnet Name: **aadds-subnet** \
-Gateway Subnet: _10.0.1.0/27_
+Gateway Subnet: _**10.0.0.0/27**_
 
 
-### Step 4: Create the Virtual Network Gateway
+### Step 5: Create the Virtual Network Gateway
 Virtual Network Gateway Name: **vng-azure-aws** \
 Region: East-US \
 Gateway Type: VPN \
-SKU: VpnGw1 \
-Generation: Generation 1 \
-Virtual Network: vnet-azure \
+SKU: VpnGw2AZ \
+Generation: Generation 2 \
+Virtual Network: aadds-vnet \
 Public IP Address: **pip-vpn-azure-aws** \
 Public IP Address Type: Basic \
 Assignment: Dynamic \
@@ -68,23 +72,23 @@ Configure BGP: Disabled
 
 
 ## Configure AWS
-### Step 5: Create the Virtual Private Cloud (VPC) in AWS
+### Step 6: Create the Virtual Private Cloud (VPC) in AWS
 
 Name: **workload-vpc** \
 IPv4 CIDR: 172.16.0.0/21
 
-### Step 6: Create a subnet inside the VPC (Virtual Network)
+### Step 7: Create a subnet inside the VPC (Virtual Network)
 
 Name: **subnet-01** \
 VPC Name: workload-vpc \
 VPC IPv4 CIDR: _172.16.0.0/21_
 
 
-### Step 7: Create a Virtual Customer Gateway pointing to the Public IP Address of Azure VPN Gateway
+### Step 8: Create a Virtual Customer Gateway pointing to the Public IP Address of Azure VPN Gateway
 
 Name: **cgw-azure-aws** \
 BGP ASN: 65515 \
-IP Address: [ pip-vpn-azure-aws ] 
+IP Address: [ pip-vpn-azure-aws ]
 
 IP address: Public IP Address of Azure Virtual Gateway | [ pip-vpn-azure-aws ] \
 Rest keep everything as default
@@ -92,22 +96,22 @@ Rest keep everything as default
 Customer Gateway ID: [ cgw-xxxxxxxxxxxxxxxx ]
 
 
-### Step 8: Create the Virtual Private Gateway, then attach to the VPC
+### Step 9: Create the Virtual Private Gateway, then attach to the VPC
 
 Name: **vpg-azure-aws** \
 Virtual Private Gateway: [ vgw-xxxxxxxxxxxxxxxx ] \
 Amazon ASN: 64512
 
-### Step 9: Create a site-to-site Virtual Private Gateway Connection
+### Step 10: Create a site-to-site Virtual Private Gateway Connection
 Name: **vpn-aadds-azure-aws** \
 Target gateway type: [ vgw-xxxxxxxxxxxxxxxx ] from step 8\
 Customer gateway: [ cgw-xxxxxxxxxxxxxxxx ] from step 7\
 Routing options: Static \
-Static IP prefixes: _10.0.0.0/24_ <--- Azure AADDS CIDR \
+Static IP prefixes: _10.0.1.0/24_ <--- Azure AADDS Subnet CIDR \
 _Leave the rest of them as default_
 
 
-### Step 10: Download the configuration file
+### Step 11: Download the configuration file
 Vendor: Generic \
 Platform: Generic \
 Software: Vendor Agnostic \
@@ -115,15 +119,14 @@ In this configuration file you will note that there are the \
 Shared Keys and the Public Ip Address for each of one of the two IPSec tunnels created by AWS.
 
 ## Connecting Azure and AWS
-### Step 11: Create the Local Network Gateway in Azure
+### Step 12: Create the Local Network Gateway in Azure
 Name: **lng-azure-aws-1**
 Resource Group Name: entra-domain-services \
 Region: East-US \
 IP address: [ First Outside IP Virtual Private Gateway address from the configuration file downloaded ] in Step 10. \
-Address Space(s): _172.16.0.0/21_ <---- AWS VPC CIDR
+Address Space(s): _172.16.0.0/25_ <---- AWS Subnet-01 CIDR
 
-
-### Step 12: Create the connection on the Virtual Network Gateway in Azure
+### Step 13: Create the connection on the Virtual Network Gateway in Azure
 Name: **connection-azure-aws-1**
 Connection Type: Site-to-Site \
 Local Network Gateway: Select the Local Network Gateway, which you created in Step 11. \
@@ -131,14 +134,14 @@ Shared Key: [ First Shared Key from the configuration file downloaded in Step 10
 _Wait till the Connection Status changes to - Connected_ \
 In the same way, check in AWS Console whether the first tunnel of Virtual Private Gateway `UP`.
 
-### Step 13: Create the Local Network Gateway in Azure
+### Step 14: Create the Local Network Gateway in Azure
 Name: **lng-azure-aws-2** \
 Resource Group Name: entra-domain-services \
 Region: East-US \
 IP address: [ Second Outside IP Virtual Private Gateway address from the configuration file downloaded in Step 10. ] \
 Address Space(s): 172.16.0.0/21 <--- AWS VPC CIDR
 
-### Step 14: Create the connection on the Virtual Network Gateway in Azure
+### Step 15: Create the connection on the Virtual Network Gateway in Azure
 Name: **connection-azure-aws-2**
 Connection Type: Site-to-Site \
 Local Network Gateway: [ Local Network Gateway created in 3c] \
@@ -146,18 +149,18 @@ Shared Key: [ Second Shared Key from the configuration file downloaded in Step 1
 _Wait till the Connection Status changes to - Connected_ \
 In the same way, check in AWS Console whether the first tunnel of Virtual Private Gateway UP.
 
-### Step 15: Create Internet Gateway and Attach it to VPC in AWS:
+### Step 16: Create Internet Gateway and Attach it to VPC in AWS:
 Name: **workload-internet-gateway**
 
-### Step 16: Now let's edit the route table associated with our VPC
+### Step 17: Now let's edit the route table associated with our VPC
 Add the route to Azure subnet through the Virtual Private Gateway \
-Destination: 10.0.0.0/24 [ Azure AADDS CIDR ] \
+Destination: 10.0.1.0/24 [ Azure AADDS CIDR ] \
 Target: Virtual Private Gateway that we created. \
 also add, \
 Destination: 0.0.0.0/0 \
 Target: Internet Gateway that we created in step 15.
 
-#### Step 17: Create VMs in both Azure and AWS and Test the connection.
+#### Step 18: Create VMs in both Azure and AWS and Test the connection.
 AWS VM's Private Address: [ 172.16.x.x] \
-Azure VM's Private Address: [ 10.0.x.x] \
+Azure VM's Private Address: [ 10.0.1.x] \
 Azure VM's Public Address: x.x.x.x
