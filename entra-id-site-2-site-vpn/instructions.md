@@ -164,3 +164,4 @@ Target: Internet Gateway that we created in step 15.
 AWS VM's Private Address: [ 172.16.x.x] \
 Azure VM's Private Address: [ 10.0.1.x] \
 Azure VM's Public Address: x.x.x.x
+REMEMBER:  Select the same subnet that you used for your tunnel or else you won't get a connection.
