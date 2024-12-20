@@ -75,7 +75,7 @@ Configure BGP: Disabled
 ### Step 6: Create the Virtual Private Cloud (VPC) in AWS
 #### VPC and more is a bit easier
 Name: **workload** \
-IPv4 CIDR: 172.16.0.0/25
+IPv4 CIDR: 172.16.0.0/22
 
 ### Step 7: Create a subnet inside the VPC (Virtual Network)
 
