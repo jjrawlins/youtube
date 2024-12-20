@@ -73,15 +73,15 @@ Configure BGP: Disabled
 
 ## Configure AWS
 ### Step 6: Create the Virtual Private Cloud (VPC) in AWS
-
-Name: **workload-vpc** \
-IPv4 CIDR: 172.16.0.0/21
+#### VPC and more is a bit easier
+Name: **workload** \
+IPv4 CIDR: 172.16.0.0/25
 
 ### Step 7: Create a subnet inside the VPC (Virtual Network)
 
 Name: **subnet-01** \
 VPC Name: workload-vpc \
-VPC IPv4 CIDR: _172.16.0.0/21_
+VPC IPv4 CIDR: _172.16.0.0/25_
 
 
 ### Step 8: Create a Virtual Customer Gateway pointing to the Public IP Address of Azure VPN Gateway
@@ -139,7 +139,7 @@ Name: **lng-azure-aws-2** \
 Resource Group Name: entra-domain-services \
 Region: East-US \
 IP address: [ Second Outside IP Virtual Private Gateway address from the configuration file downloaded in Step 10. ] \
-Address Space(s): 172.16.0.0/21 <--- AWS VPC CIDR
+Address Space(s): 172.16.0.0/25 <--- AWS Subnet-01 CIDR
 
 ### Step 15: Create the connection on the Virtual Network Gateway in Azure
 Name: **connection-azure-aws-2**
